@@ -9,6 +9,10 @@ ROOTDIR=`pwd`
 
 #libsodium
 LIBSODIUM_DIST="${ROOTDIR}/libsodium-ios/libsodium_dist/"
+echo "Buliding dependency libsodium..."
+cd libsodium-ios
+bash libsodium.sh
+cd $ROOTDIR
 
 ARCHS=${ARCHS:-"armv7 armv7s arm64 i386 x86_64"}
 DEVELOPER=$(xcode-select -print-path)
@@ -36,7 +40,9 @@ SDK=$(xcodebuild -showsdks \
     )
 
 OTHER_LDFLAGS=""
-OTHER_CPPFLAGS="-I${LIBSODIUM_DIST}/include"
+OTHER_CFLAGS="-Os -Qunused-arguments"
+OTHER_CPPFLAGS="-Os -I${LIBSODIUM_DIST}/include"
+OTHER_CXXFLAGS="-Os"
 
 
 rm -rf $LIBDIR
@@ -75,31 +81,35 @@ do
 	    HOST="${ARCH}-apple-darwin"
 	    export BASEDIR="${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer"
 	    export ISDKROOT="${BASEDIR}/SDKs/${PLATFORM}${SDK}.sdk"
-	    export CPPFLAGS="-Os -mthumb -Qunused-arguments -arch ${ARCH} -isysroot ${ISDKROOT} ${OTHER_CPPFLAGS}"
-	    export LDFLAGS="-mthumb -arch ${ARCH} -isysroot ${ISDKROOT} ${OTHER_LDFLAGS}"
+	    export CXXFLAGS="${OTHER_CXXFLAGS}"
+	    export CPPFLAGS="-arch ${ARCH} -isysroot ${ISDKROOT} ${OTHER_CPPFLAGS}"
+	    export LDFLAGS="-arch ${ARCH} -isysroot ${ISDKROOT} ${OTHER_LDFLAGS}"
             ;;
         armv7s)
 	    PLATFORM="iPhoneOS"
 	    HOST="${ARCH}-apple-darwin"
 	    export BASEDIR="${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer"
 	    export ISDKROOT="${BASEDIR}/SDKs/${PLATFORM}${SDK}.sdk"
-	    export CPPFLAGS="-Os -mthumb -Qunused-arguments -arch ${ARCH} -isysroot ${ISDKROOT} ${OTHER_CPPFLAGS}"
-	    export LDFLAGS="-mthumb -arch ${ARCH} -isysroot ${ISDKROOT} ${OTHER_LDFLAGS}"
+	    export CXXFLAGS="${OTHER_CXXFLAGS}"
+	    export CPPFLAGS="-arch ${ARCH} -isysroot ${ISDKROOT} ${OTHER_CPPFLAGS}"
+	    export LDFLAGS="-arch ${ARCH} -isysroot ${ISDKROOT} ${OTHER_LDFLAGS}"
             ;;
         arm64)
 	    PLATFORM="iPhoneOS"
 	    HOST="arm-apple-darwin"
 	    export BASEDIR="${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer"
 	    export ISDKROOT="${BASEDIR}/SDKs/${PLATFORM}${SDK}.sdk"
-	    export CPPFLAGS="-Os -mthumb -Qunused-arguments -arch ${ARCH} -isysroot ${ISDKROOT} ${OTHER_CPPFLAGS}"
-	    export LDFLAGS="-mthumb -arch ${ARCH} -isysroot ${ISDKROOT} ${OTHER_LDFLAGS}"
+	    export CXXFLAGS="${OTHER_CXXFLAGS}"
+	    export CPPFLAGS="-arch ${ARCH} -isysroot ${ISDKROOT} ${OTHER_CPPFLAGS}"
+	    export LDFLAGS="-arch ${ARCH} -isysroot ${ISDKROOT} ${OTHER_LDFLAGS}"
             ;;
         i386)
 	    PLATFORM="iPhoneSimulator"
 	    HOST="${ARCH}-apple-darwin"
 	    export BASEDIR="${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer"
 	    export ISDKROOT="${BASEDIR}/SDKs/${PLATFORM}${SDK}.sdk"
-	    export CPPFLAGS="-Os -m32 -Qunused-arguments -arch ${ARCH} -isysroot ${ISDKROOT} -miphoneos-version-min=${SDK} ${OTHER_CPPFLAGS}"
+	   	export CXXFLAGS="${OTHER_CXXFLAGS}"
+	    export CPPFLAGS="-m32 -arch ${ARCH} -isysroot ${ISDKROOT} -miphoneos-version-min=${SDK} ${OTHER_CPPFLAGS}"
 	    export LDFLAGS="-m32 -arch ${ARCH} ${OTHER_LDFLAGS}"
             ;;
         x86_64)
@@ -107,7 +117,8 @@ do
 	    HOST="${ARCH}-apple-darwin"
 	    export BASEDIR="${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer"
 	    export ISDKROOT="${BASEDIR}/SDKs/${PLATFORM}${SDK}.sdk"
-	    export CPPFLAGS="-Os -Qunused-arguments -arch ${ARCH} ${OTHER_LDFLAGS}  -isysroot ${ISDKROOT} -miphoneos-version-min=${SDK} ${OTHER_CPPFLAGS}"
+	    export CXXFLAGS="${OTHER_CXXFLAGS}"
+	    export CPPFLAGS="-arch ${ARCH} -isysroot ${ISDKROOT} -miphoneos-version-min=${SDK} ${OTHER_CPPFLAGS}"
 	    export LDFLAGS="-arch ${ARCH} ${OTHER_LDFLAGS}"
 	    echo "LDFLAGS $LDFLAGS"
             ;;
