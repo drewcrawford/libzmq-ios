@@ -128,7 +128,7 @@ do
             ;;
     esac
 
-    export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
+    export PATH="${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin:${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/sbin:$PATH"
 
     echo "Configuring for ${ARCH}..."
     set +e
