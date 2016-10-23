@@ -9,7 +9,7 @@ ROOTDIR=`pwd`
 
 #libsodium
 LIBSODIUM_DIST="${ROOTDIR}/libsodium-ios/libsodium_dist/"
-echo "Buliding dependency libsodium..."
+echo "Building dependency 'libsodium-ios'..."
 cd libsodium-ios
 bash libsodium.sh
 cd $ROOTDIR
@@ -29,9 +29,10 @@ DSTDIR=${SCRIPTDIR}
 BUILDDIR="${DSTDIR}/libzmq_build"
 DISTDIR="${DSTDIR}/libzmq_dist"
 DISTLIBDIR="${DISTDIR}/lib"
-TARNAME="zeromq-4.0.3"
+TARVER=4.1.5
+TARNAME="zeromq-$TARVER"
 TARFILE=${TARNAME}.tar.gz
-TARURL=http://download.zeromq.org/$TARFILE
+TARURL=https://github.com/zeromq/zeromq4-1/releases/download/v$TARVER/$TARFILE
 
 # http://libwebp.webm.googlecode.com/git/iosbuild.sh
 # Extract the latest SDK version from the final field of the form: iphoneosX.Y
@@ -39,12 +40,14 @@ SDK=$(xcodebuild -showsdks \
     | grep iphoneos | sort | tail -n 1 | awk '{print substr($NF, 9)}'
     )
 
+IOS_VERSION_MIN=8.0
 OTHER_LDFLAGS=""
 OTHER_CFLAGS="-Os -Qunused-arguments"
-OTHER_CPPFLAGS="-Os -I${LIBSODIUM_DIST}/include"
+# Enable Bitcode
+OTHER_CPPFLAGS="-Os -I${LIBSODIUM_DIST}/include -fembed-bitcode"
 OTHER_CXXFLAGS="-Os"
 
-
+# Download and extract ZeroMQ
 rm -rf $LIBDIR
 set -e
 curl -O -L $TARURL
@@ -82,49 +85,53 @@ do
 	    export BASEDIR="${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer"
 	    export ISDKROOT="${BASEDIR}/SDKs/${PLATFORM}${SDK}.sdk"
 	    export CXXFLAGS="${OTHER_CXXFLAGS}"
-	    export CPPFLAGS="-arch ${ARCH} -isysroot ${ISDKROOT} ${OTHER_CPPFLAGS}"
+	    export CPPFLAGS="-arch ${ARCH} -isysroot ${ISDKROOT} -mios-version-min=${IOS_VERSION_MIN} ${OTHER_CPPFLAGS}"
 	    export LDFLAGS="-arch ${ARCH} -isysroot ${ISDKROOT} ${OTHER_LDFLAGS}"
             ;;
+
         armv7s)
 	    PLATFORM="iPhoneOS"
 	    HOST="${ARCH}-apple-darwin"
 	    export BASEDIR="${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer"
 	    export ISDKROOT="${BASEDIR}/SDKs/${PLATFORM}${SDK}.sdk"
 	    export CXXFLAGS="${OTHER_CXXFLAGS}"
-	    export CPPFLAGS="-arch ${ARCH} -isysroot ${ISDKROOT} ${OTHER_CPPFLAGS}"
+	    export CPPFLAGS="-arch ${ARCH} -isysroot ${ISDKROOT} -mios-version-min=${IOS_VERSION_MIN} ${OTHER_CPPFLAGS}"
 	    export LDFLAGS="-arch ${ARCH} -isysroot ${ISDKROOT} ${OTHER_LDFLAGS}"
             ;;
+
         arm64)
 	    PLATFORM="iPhoneOS"
 	    HOST="arm-apple-darwin"
 	    export BASEDIR="${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer"
 	    export ISDKROOT="${BASEDIR}/SDKs/${PLATFORM}${SDK}.sdk"
 	    export CXXFLAGS="${OTHER_CXXFLAGS}"
-	    export CPPFLAGS="-arch ${ARCH} -isysroot ${ISDKROOT} ${OTHER_CPPFLAGS}"
+	    export CPPFLAGS="-arch ${ARCH} -isysroot ${ISDKROOT} -mios-version-min=${IOS_VERSION_MIN} ${OTHER_CPPFLAGS}"
 	    export LDFLAGS="-arch ${ARCH} -isysroot ${ISDKROOT} ${OTHER_LDFLAGS}"
             ;;
+
         i386)
 	    PLATFORM="iPhoneSimulator"
 	    HOST="${ARCH}-apple-darwin"
 	    export BASEDIR="${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer"
 	    export ISDKROOT="${BASEDIR}/SDKs/${PLATFORM}${SDK}.sdk"
-	   	export CXXFLAGS="${OTHER_CXXFLAGS}"
-	    export CPPFLAGS="-m32 -arch ${ARCH} -isysroot ${ISDKROOT} -miphoneos-version-min=${SDK} ${OTHER_CPPFLAGS}"
+	    export CXXFLAGS="${OTHER_CXXFLAGS}"
+	    export CPPFLAGS="-m32 -arch ${ARCH} -isysroot ${ISDKROOT} -mios-version-min=${IOS_VERSION_MIN} ${OTHER_CPPFLAGS}"
 	    export LDFLAGS="-m32 -arch ${ARCH} ${OTHER_LDFLAGS}"
             ;;
+
         x86_64)
 	    PLATFORM="iPhoneSimulator"
 	    HOST="${ARCH}-apple-darwin"
 	    export BASEDIR="${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer"
 	    export ISDKROOT="${BASEDIR}/SDKs/${PLATFORM}${SDK}.sdk"
 	    export CXXFLAGS="${OTHER_CXXFLAGS}"
-	    export CPPFLAGS="-arch ${ARCH} -isysroot ${ISDKROOT} -miphoneos-version-min=${SDK} ${OTHER_CPPFLAGS}"
+	    export CPPFLAGS="-arch ${ARCH} -isysroot ${ISDKROOT} -mios-version-min=${IOS_VERSION_MIN} ${OTHER_CPPFLAGS}"
 	    export LDFLAGS="-arch ${ARCH} ${OTHER_LDFLAGS}"
 	    echo "LDFLAGS $LDFLAGS"
             ;;
         *)
-            echo "Unsupported architecture ${ARCH}"
-            exit 1
+	    echo "Unsupported architecture ${ARCH}"
+	    exit 1
             ;;
     esac
 
@@ -142,7 +149,7 @@ do
 	--with-libsodium=${LIBSODIUM_DIST}
 
     echo "Building ${LIBNAME} for ${ARCH}..."
-    cd ${LIBDIR}/src
+    cd ${LIBDIR}
     
     make -j8 V=0
     make install
